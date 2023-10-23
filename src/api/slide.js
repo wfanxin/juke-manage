@@ -2,7 +2,7 @@ import request from '@/utils/request'
 
 export function list(params) {
   return request({
-    url: '/lv/match/tag/list',
+    url: '/lv/mobile/slide/list',
     method: 'get',
     params: params
   })
@@ -10,7 +10,7 @@ export function list(params) {
 
 export function add(params) {
   return request({
-    url: '/lv/match/tag/add',
+    url: '/lv/mobile/slide/add',
     method: 'post',
     data: params
   })
@@ -18,7 +18,7 @@ export function add(params) {
 
 export function edit(params) {
   return request({
-    url: '/lv/match/tag/edit',
+    url: '/lv/mobile/slide/edit',
     method: 'post',
     data: params
   })
@@ -26,7 +26,7 @@ export function edit(params) {
 
 export function del(params) {
   return request({
-    url: '/lv/match/tag/del',
+    url: '/lv/mobile/slide/del',
     method: 'post',
     data: params
   })

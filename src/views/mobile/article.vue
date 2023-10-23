@@ -5,17 +5,7 @@
       <el-col :span="24" class="toolbar" style="padding-bottom: 0px;">
         <el-form :inline="true" :model="filters" @submit.native.prevent>
           <el-form-item>
-            <el-select v-model="filters.pid" filterable clearable placeholder="请选择标签大类">
-              <el-option
-                v-for="item in tag_list"
-                :key="item.value"
-                :label="item.label"
-                :value="item.value">
-              </el-option>
-            </el-select>
-          </el-form-item>
-          <el-form-item>
-            <el-input v-model="filters.name" clearable placeholder="子类名称"></el-input>
+            <el-input v-model="filters.title" clearable placeholder="标题"></el-input>
           </el-form-item>
           <el-form-item>
             <el-button type="primary" @click="handleSearch">搜索</el-button>
@@ -29,9 +19,7 @@
 
     <!--列表-->
     <el-table v-loading="loading" :data="data" highlight-current-row style="width: 100%;">
-      <el-table-column prop="name" label="子类名称">
-      </el-table-column>
-      <el-table-column prop="pname" label="标签大类">
+      <el-table-column prop="title" label="标题">
       </el-table-column>
       <el-table-column prop="created_at" label="添加时间">
       </el-table-column>
@@ -50,20 +38,13 @@
     </el-pagination>
 
     <!--编辑界面-->
-    <el-dialog :title="dialogTitle" :visible.sync="dialogFormVisible" :close-on-click-modal="false" :show-close="false" width="500px">
-      <el-form :model="editForm" label-width="110px" :rules="formRules" ref="form" style="width: 80%">
-        <el-form-item label="标签大类" prop="pid">
-          <el-select v-model="editForm.pid" filterable placeholder="请选择" style="width: 100%;">
-            <el-option
-              v-for="item in tag_list"
-              :key="item.value"
-              :label="item.label"
-              :value="item.value">
-            </el-option>
-          </el-select>
+    <el-dialog :title="dialogTitle" :visible.sync="dialogFormVisible" :close-on-click-modal="false" :show-close="false" width="1000px">
+      <el-form :model="editForm" label-width="80px" :rules="formRules" ref="form" style="width: 900px;">
+        <el-form-item label="标题" prop="title">
+          <el-input v-model="editForm.title" auto-complete="off" ></el-input>
         </el-form-item>
-        <el-form-item label="子类名称" prop="name">
-          <el-input v-model="editForm.name" auto-complete="off" ></el-input>
+        <el-form-item label="内容" prop="content">
+          <quill-editor ref="myQuillEditor" v-model="editForm.content"/>
         </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
@@ -81,18 +62,26 @@ import {
   add,
   edit,
   del
-} from '@/api/tag'
+} from '@/api/article'
 import {
   fun_getRole
 } from '@/utils/common'
+import {
+  quillEditor
+} from 'vue-quill-editor'
+import 'quill/dist/quill.core.css'
+import 'quill/dist/quill.snow.css'
+import 'quill/dist/quill.bubble.css'
 
 export default {
+  components: {
+    quillEditor
+  },
   data() {
     return {
       roleKey: '',
       filters: {
-        pid: '',
-        name: ''
+        title: ''
       },
       addIsLoading: false,
       editIsLoading: false,
@@ -101,12 +90,11 @@ export default {
       dialogTitle: '',
       editForm: {},
       formRules: {
-        pid: [{ required: true, message: '请选择标签大类', trigger: 'blur' }],
-        name: [{ required: true, message: '请输入子类名称', trigger: 'blur' }]
+        title: [{ required: true, message: '请输入标题', trigger: 'blur' }],
+        content: [{ required: true, message: '请输入内容', trigger: 'blur' }]
       },
       loading: false,
       data: [],
-      tag_list: [],
       page: 1,
       pageSize: 20,
       total: 0
@@ -166,8 +154,8 @@ export default {
       this.dialogStatus = 'create'
       this.dialogTitle = '添加'
       this.editForm = {
-        pid: '',
-        name: ''
+        title: '',
+        content: ''
       }
       this.dialogFormVisible = true
     },
@@ -176,8 +164,8 @@ export default {
       this.dialogTitle = '修改'
       this.editForm = {
         id: row.id,
-        pid: row.pid,
-        name: row.name
+        title: row.title,
+        content: row.content
       }
       this.dialogFormVisible = true
     },
@@ -212,7 +200,6 @@ export default {
         if (res.code === 0) {
           this.total = res.total
           this.data = res.data
-          this.tag_list = res.tag_list
         }
       }).catch(() => { this.loading = false })
     }
@@ -223,3 +210,8 @@ export default {
   }
 }
 </script>
+<style>
+.ql-container  {
+  min-height: 200px;
+}
+</style>

@@ -25,7 +25,7 @@ import Layout from '../views/layout/Layout'
 export const constantRouterMap = [
   {
     path: '',
-    redirect: '/match/match'
+    redirect: '/mobile/slide'
   },
   // {
   //   path: '/welcome',
@@ -60,31 +60,31 @@ export default new Router({
 })
 export const asyncRouterMap = [
   {
-    path: '/match',
+    path: '/mobile',
     component: Layout,
     redirect: 'noredirect',
-    name: '比赛管理',
-    key: 'Match',
+    name: '手机端管理',
+    key: 'Mobile',
     meta: {
-      title: '比赛管理',
+      title: '手机端管理',
       icon: 'edit'
     },
     children: [{
-      path: 'match',
-      component: () => import('@/views/match/match'),
-      name: '比赛列表',
-      key: '@Get:lv_match_match_list',
+      path: 'slide',
+      component: () => import('@/views/mobile/slide'),
+      name: '幻灯片列表',
+      key: '@Get:lv_mobile_slide_list',
       meta: {
-        title: '比赛列表',
+        title: '幻灯片列表',
         icon: 'documentation'
       }
     }, {
-      path: 'tag',
-      component: () => import('@/views/match/tag'),
-      name: '标签列表',
-      key: '@Get:lv_match_tag_list',
+      path: 'article',
+      component: () => import('@/views/mobile/article'),
+      name: '文章列表',
+      key: '@Get:lv_mobile_article_list',
       meta: {
-        title: '标签列表',
+        title: '文章列表',
         icon: 'documentation'
       }
     }]
@@ -103,7 +103,7 @@ export const asyncRouterMap = [
       component: () => import('@/views/system/permission'),
       name: '权限列表',
       key: '@Get:lv_permissions',
-      hidden: true,
+      // hidden: true,
       meta: {
         title: '权限列表',
         icon: 'lock'
@@ -114,7 +114,7 @@ export const asyncRouterMap = [
       component: () => import('@/views/system/role-table'), // 表格
       name: '角色列表',
       key: '@Get:lv_roles',
-      hidden: true,
+      // hidden: true,
       meta: {
         title: '角色列表',
         icon: 'table'
