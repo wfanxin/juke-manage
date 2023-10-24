@@ -21,6 +21,11 @@
     <el-table v-loading="loading" :data="data" highlight-current-row style="width: 100%;">
       <el-table-column prop="title" label="标题">
       </el-table-column>
+      <el-table-column prop="image" label="封面图">
+        <template slot-scope="scope">
+          <el-image style="width: 100px; height: 100px" :src="scope.row.image" :preview-src-list="[scope.row.image]"></el-image>
+        </template>
+      </el-table-column>
       <el-table-column prop="created_at" label="添加时间">
       </el-table-column>
       <el-table-column prop="updated_at" label="修改时间">
@@ -42,6 +47,18 @@
       <el-form :model="editForm" label-width="80px" :rules="formRules" ref="form" style="width: 900px;">
         <el-form-item label="标题" prop="title">
           <el-input v-model="editForm.title" auto-complete="off" ></el-input>
+        </el-form-item>
+        <el-form-item label="封面图" prop="image">
+          <el-upload
+            class="avatar-uploader"
+            :action="upload_url"
+            :headers="myHeaders"
+            accept=".jpg, .png, .jpeg"
+            :show-file-list="false"
+            :on-success="uploadSuccess">
+            <img v-if="editForm.image" :src="editForm.image" class="avatar">
+            <i v-else class="el-icon-plus avatar-uploader-icon"></i>
+          </el-upload>
         </el-form-item>
         <el-form-item label="内容" prop="content">
           <quill-editor ref="myQuillEditor" v-model="editForm.content"/>
@@ -66,6 +83,7 @@ import {
 import {
   fun_getRole
 } from '@/utils/common'
+import { getToken } from '@/utils/auth'
 import {
   quillEditor
 } from 'vue-quill-editor'
@@ -79,6 +97,10 @@ export default {
   },
   data() {
     return {
+      upload_url: process.env.BASE_API + '/lv/service/uploadFile',
+      myHeaders: {
+        'X-Token': getToken()
+      },
       roleKey: '',
       filters: {
         title: ''
@@ -91,6 +113,7 @@ export default {
       editForm: {},
       formRules: {
         title: [{ required: true, message: '请输入标题', trigger: 'blur' }],
+        image: [{ required: true, message: '请上传封面图', trigger: 'blur' }],
         content: [{ required: true, message: '请输入内容', trigger: 'blur' }]
       },
       loading: false,
@@ -155,6 +178,7 @@ export default {
       this.dialogTitle = '添加'
       this.editForm = {
         title: '',
+        image: '',
         content: ''
       }
       this.dialogFormVisible = true
@@ -165,6 +189,7 @@ export default {
       this.editForm = {
         id: row.id,
         title: row.title,
+        image: row.image,
         content: row.content
       }
       this.dialogFormVisible = true
@@ -190,6 +215,17 @@ export default {
       this.dialogFormVisible = false
       this.$refs['form'].resetFields()
     },
+    uploadSuccess(res, file, fileList) {
+      if (res.code === 0) {
+        this.editForm.image = res.file
+        console.log(this.editForm.image)
+      } else {
+        this.$message({
+          message: res.message,
+          type: 'error'
+        })
+      }
+    },
     getList() {
       const params = Object.assign({}, this.filters)
       params.page = this.page
@@ -211,7 +247,30 @@ export default {
 }
 </script>
 <style>
-.ql-container  {
-  min-height: 200px;
-}
+  .ql-container  {
+    min-height: 200px;
+  }
+  .avatar-uploader .el-upload {
+    border: 1px dashed #d9d9d9;
+    border-radius: 6px;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+  }
+  .avatar-uploader .el-upload:hover {
+    border-color: #409EFF;
+  }
+  .avatar-uploader-icon {
+    font-size: 28px;
+    color: #8c939d;
+    width: 178px;
+    height: 178px;
+    line-height: 178px;
+    text-align: center;
+  }
+  .avatar {
+    width: 178px;
+    height: 178px;
+    display: block;
+  }
 </style>

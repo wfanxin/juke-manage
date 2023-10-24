@@ -21,6 +21,11 @@
     <el-table v-loading="loading" :data="data" highlight-current-row style="width: 100%;">
       <el-table-column prop="title" label="标题">
       </el-table-column>
+      <el-table-column prop="image" label="图片">
+        <template slot-scope="scope">
+          <el-image style="width: 100px; height: 100px" :src="scope.row.image" :preview-src-list="[scope.row.image]"></el-image>
+        </template>
+      </el-table-column>
       <el-table-column prop="created_at" label="添加时间">
       </el-table-column>
       <el-table-column prop="updated_at" label="修改时间">
@@ -38,13 +43,22 @@
     </el-pagination>
 
     <!--编辑界面-->
-    <el-dialog :title="dialogTitle" :visible.sync="dialogFormVisible" :close-on-click-modal="false" :show-close="false" width="1000px">
-      <el-form :model="editForm" label-width="80px" :rules="formRules" ref="form" style="width: 900px;">
+    <el-dialog :title="dialogTitle" :visible.sync="dialogFormVisible" :close-on-click-modal="false" :show-close="false" width="600px">
+      <el-form :model="editForm" label-width="80px" :rules="formRules" ref="form" style="width: 500px;">
         <el-form-item label="标题" prop="title">
           <el-input v-model="editForm.title" auto-complete="off" ></el-input>
         </el-form-item>
-        <el-form-item label="内容" prop="content">
-          <quill-editor ref="myQuillEditor" v-model="editForm.content"/>
+        <el-form-item label="图片" prop="image">
+          <el-upload
+            class="avatar-uploader"
+            :action="upload_url"
+            :headers="myHeaders"
+            accept=".jpg, .png, .jpeg"
+            :show-file-list="false"
+            :on-success="uploadSuccess">
+            <img v-if="editForm.image" :src="editForm.image" class="avatar">
+            <i v-else class="el-icon-plus avatar-uploader-icon"></i>
+          </el-upload>
         </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
@@ -63,22 +77,18 @@ import {
   edit,
   del
 } from '@/api/slide'
+import { getToken } from '@/utils/auth'
 import {
   fun_getRole
 } from '@/utils/common'
-import {
-  quillEditor
-} from 'vue-quill-editor'
-import 'quill/dist/quill.core.css'
-import 'quill/dist/quill.snow.css'
-import 'quill/dist/quill.bubble.css'
 
 export default {
-  components: {
-    quillEditor
-  },
   data() {
     return {
+      upload_url: process.env.BASE_API + '/lv/service/uploadFile',
+      myHeaders: {
+        'X-Token': getToken()
+      },
       roleKey: '',
       filters: {
         title: ''
@@ -91,7 +101,7 @@ export default {
       editForm: {},
       formRules: {
         title: [{ required: true, message: '请输入标题', trigger: 'blur' }],
-        content: [{ required: true, message: '请输入内容', trigger: 'blur' }]
+        image: [{ required: true, message: '请上传图片', trigger: 'blur' }]
       },
       loading: false,
       data: [],
@@ -155,7 +165,7 @@ export default {
       this.dialogTitle = '添加'
       this.editForm = {
         title: '',
-        content: ''
+        image: ''
       }
       this.dialogFormVisible = true
     },
@@ -165,7 +175,7 @@ export default {
       this.editForm = {
         id: row.id,
         title: row.title,
-        content: row.content
+        image: row.image
       }
       this.dialogFormVisible = true
     },
@@ -190,6 +200,17 @@ export default {
       this.dialogFormVisible = false
       this.$refs['form'].resetFields()
     },
+    uploadSuccess(res, file, fileList) {
+      if (res.code === 0) {
+        this.editForm.image = res.file
+        console.log(this.editForm.image)
+      } else {
+        this.$message({
+          message: res.message,
+          type: 'error'
+        })
+      }
+    },
     getList() {
       const params = Object.assign({}, this.filters)
       params.page = this.page
@@ -211,7 +232,27 @@ export default {
 }
 </script>
 <style>
-.ql-container  {
-  min-height: 200px;
-}
+  .avatar-uploader .el-upload {
+    border: 1px dashed #d9d9d9;
+    border-radius: 6px;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+  }
+  .avatar-uploader .el-upload:hover {
+    border-color: #409EFF;
+  }
+  .avatar-uploader-icon {
+    font-size: 28px;
+    color: #8c939d;
+    width: 178px;
+    height: 178px;
+    line-height: 178px;
+    text-align: center;
+  }
+  .avatar {
+    width: 178px;
+    height: 178px;
+    display: block;
+  }
 </style>

@@ -63,28 +63,46 @@ export const asyncRouterMap = [
     path: '/mobile',
     component: Layout,
     redirect: 'noredirect',
-    name: '手机端管理',
+    name: '网站管理',
     key: 'Mobile',
     meta: {
-      title: '手机端管理',
+      title: '网站管理',
       icon: 'edit'
     },
     children: [{
       path: 'slide',
       component: () => import('@/views/mobile/slide'),
-      name: '幻灯片列表',
+      name: '轮播图',
       key: '@Get:lv_mobile_slide_list',
       meta: {
-        title: '幻灯片列表',
+        title: '轮播图',
         icon: 'documentation'
       }
     }, {
       path: 'article',
       component: () => import('@/views/mobile/article'),
-      name: '文章列表',
+      name: '平台说明',
       key: '@Get:lv_mobile_article_list',
       meta: {
-        title: '文章列表',
+        title: '平台说明',
+        icon: 'documentation'
+      }
+    }, {
+      path: 'config',
+      component: () => import('@/views/mobile/article'),
+      name: '网站配置',
+      key: '@Get:lv_mobile_article_list',
+      meta: {
+        title: '网站配置',
+        icon: 'documentation'
+      }
+    }, {
+      path: 'member',
+      component: () => import('@/views/mobile/article'),
+      name: '会员列表',
+      key: '@Get:lv_mobile_article_list',
+      meta: {
+        title: '会员列表',
         icon: 'documentation'
       }
     }]
