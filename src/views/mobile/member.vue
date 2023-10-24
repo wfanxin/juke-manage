@@ -5,37 +5,45 @@
       <el-col :span="24" class="toolbar" style="padding-bottom: 0px;">
         <el-form :inline="true" :model="filters" @submit.native.prevent>
           <el-form-item>
-            <el-input v-model="filters.title" clearable placeholder="标题"></el-input>
+            <el-input v-model="filters.mobile" clearable placeholder="手机号"></el-input>
+          </el-form-item>
+          <el-form-item>
+            <el-input v-model="filters.name" clearable placeholder="姓名"></el-input>
           </el-form-item>
           <el-form-item>
             <el-button type="primary" @click="handleSearch">搜索</el-button>
           </el-form-item>
-          <el-form-item>
+          <!-- <el-form-item>
             <el-button type="primary" @click="handleAdd">添加</el-button>
-          </el-form-item>
+          </el-form-item> -->
         </el-form>
       </el-col>
     </el-row>
 
     <!--列表-->
     <el-table v-loading="loading" :data="data" highlight-current-row style="width: 100%;">
-      <el-table-column prop="title" label="标题">
+      <el-table-column prop="mobile" label="手机号">
       </el-table-column>
-      <el-table-column prop="image" label="封面图">
+      <el-table-column prop="name" label="姓名">
+      </el-table-column>
+      <el-table-column prop="avatar" label="头像">
         <template slot-scope="scope">
-          <el-image style="width: 50px; height: 50px" :src="scope.row.image" :preview-src-list="[scope.row.image]"></el-image>
+          <el-image v-if="scope.row.avatar" style="width: 50px; height: 50px" :src="scope.row.avatar" :preview-src-list="[scope.row.avatar]"></el-image>
+          <div v-else style="width: 50px; height: 50px; border: 1px solid #eee; text-align: center; line-height: 50px; color: #999;">+</div>
         </template>
       </el-table-column>
-      <el-table-column prop="created_at" label="添加时间">
+      <el-table-column prop="level_name" label="等级">
       </el-table-column>
-      <el-table-column prop="updated_at" label="修改时间">
+      <el-table-column prop="created_at" label="注册时间">
       </el-table-column>
-      <el-table-column label="操作" width="160">
+      <!-- <el-table-column prop="updated_at" label="修改时间">
+      </el-table-column> -->
+      <!-- <el-table-column label="操作" width="160">
         <template slot-scope="scope">
           <el-button size="small" @click="handleEdit(scope.row)">修改</el-button>
           <el-button type="danger" size="small" @click="handleDel(scope.row)">删除</el-button>
         </template>
-      </el-table-column>
+      </el-table-column> -->
     </el-table>
 
 	  <!--页码-->
@@ -43,12 +51,12 @@
     </el-pagination>
 
     <!--编辑界面-->
-    <el-dialog :title="dialogTitle" :visible.sync="dialogFormVisible" :close-on-click-modal="false" :show-close="false" width="1000px">
-      <el-form :model="editForm" label-width="80px" :rules="formRules" ref="form" style="width: 900px;">
+    <el-dialog :title="dialogTitle" :visible.sync="dialogFormVisible" :close-on-click-modal="false" :show-close="false" width="600px">
+      <el-form :model="editForm" label-width="80px" :rules="formRules" ref="form" style="width: 500px;">
         <el-form-item label="标题" prop="title">
           <el-input v-model="editForm.title" auto-complete="off" ></el-input>
         </el-form-item>
-        <el-form-item label="封面图" prop="image">
+        <el-form-item label="图片" prop="image">
           <el-upload
             class="avatar-uploader"
             :action="upload_url"
@@ -59,9 +67,6 @@
             <img v-if="editForm.image" :src="editForm.image" class="avatar">
             <i v-else class="el-icon-plus avatar-uploader-icon"></i>
           </el-upload>
-        </el-form-item>
-        <el-form-item label="内容" prop="content">
-          <quill-editor ref="myQuillEditor" v-model="editForm.content"/>
         </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
@@ -79,22 +84,13 @@ import {
   add,
   edit,
   del
-} from '@/api/article'
+} from '@/api/member'
+import { getToken } from '@/utils/auth'
 import {
   fun_getRole
 } from '@/utils/common'
-import { getToken } from '@/utils/auth'
-import {
-  quillEditor
-} from 'vue-quill-editor'
-import 'quill/dist/quill.core.css'
-import 'quill/dist/quill.snow.css'
-import 'quill/dist/quill.bubble.css'
 
 export default {
-  components: {
-    quillEditor
-  },
   data() {
     return {
       upload_url: process.env.BASE_API + '/lv/service/uploadFile',
@@ -103,7 +99,8 @@ export default {
       },
       roleKey: '',
       filters: {
-        title: ''
+        mobile: '',
+        name: ''
       },
       addIsLoading: false,
       editIsLoading: false,
@@ -112,9 +109,8 @@ export default {
       dialogTitle: '',
       editForm: {},
       formRules: {
-        title: [{ required: true, message: '请输入标题', trigger: 'blur' }],
-        image: [{ required: true, message: '请上传封面图', trigger: 'blur' }],
-        content: [{ required: true, message: '请输入内容', trigger: 'blur' }]
+        name: [{ required: true, message: '请输入姓名', trigger: 'blur' }],
+        image: [{ required: true, message: '请上传图片', trigger: 'blur' }]
       },
       loading: false,
       data: [],
@@ -178,8 +174,7 @@ export default {
       this.dialogTitle = '添加'
       this.editForm = {
         title: '',
-        image: '',
-        content: ''
+        image: ''
       }
       this.dialogFormVisible = true
     },
@@ -189,8 +184,7 @@ export default {
       this.editForm = {
         id: row.id,
         title: row.title,
-        image: row.image,
-        content: row.content
+        image: row.image
       }
       this.dialogFormVisible = true
     },
@@ -247,9 +241,6 @@ export default {
 }
 </script>
 <style>
-  .ql-container  {
-    min-height: 200px;
-  }
   .avatar-uploader .el-upload {
     border: 1px dashed #d9d9d9;
     border-radius: 6px;

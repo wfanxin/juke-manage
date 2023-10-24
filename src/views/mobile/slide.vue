@@ -23,7 +23,7 @@
       </el-table-column>
       <el-table-column prop="image" label="图片">
         <template slot-scope="scope">
-          <el-image style="width: 100px; height: 100px" :src="scope.row.image" :preview-src-list="[scope.row.image]"></el-image>
+          <el-image style="width: 50px; height: 50px" :src="scope.row.image" :preview-src-list="[scope.row.image]"></el-image>
         </template>
       </el-table-column>
       <el-table-column prop="created_at" label="添加时间">
