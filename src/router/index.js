@@ -88,6 +88,15 @@ export const asyncRouterMap = [
         icon: 'documentation'
       }
     }, {
+      path: 'config',
+      component: () => import('@/views/mobile/config'),
+      name: '网站配置',
+      key: '@Get:lv_mobile_config_list',
+      meta: {
+        title: '网站配置',
+        icon: 'documentation'
+      }
+    }, {
       path: 'member',
       component: () => import('@/views/mobile/member'),
       name: '会员管理',
