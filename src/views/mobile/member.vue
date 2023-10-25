@@ -13,9 +13,9 @@
           <el-form-item>
             <el-button type="primary" @click="handleSearch">搜索</el-button>
           </el-form-item>
-          <!-- <el-form-item>
-            <el-button type="primary" @click="handleAdd">添加</el-button>
-          </el-form-item> -->
+          <el-form-item style="float: right;" v-if="system_num === 0">
+            <el-button type="primary" @click="handleCreateSystem">生成系统会员</el-button>
+          </el-form-item>
         </el-form>
       </el-col>
     </el-row>
@@ -34,16 +34,15 @@
       </el-table-column>
       <el-table-column prop="level_name" label="等级">
       </el-table-column>
+      <el-table-column prop="status_name" label="状态">
+      </el-table-column>
       <el-table-column prop="created_at" label="注册时间">
       </el-table-column>
-      <!-- <el-table-column prop="updated_at" label="修改时间">
-      </el-table-column> -->
-      <!-- <el-table-column label="操作" width="160">
+      <el-table-column label="操作" width="160">
         <template slot-scope="scope">
           <el-button size="small" @click="handleEdit(scope.row)">修改</el-button>
-          <el-button type="danger" size="small" @click="handleDel(scope.row)">删除</el-button>
         </template>
-      </el-table-column> -->
+      </el-table-column>
     </el-table>
 
 	  <!--页码-->
@@ -52,11 +51,34 @@
 
     <!--编辑界面-->
     <el-dialog :title="dialogTitle" :visible.sync="dialogFormVisible" :close-on-click-modal="false" :show-close="false" width="600px">
-      <el-form :model="editForm" label-width="80px" :rules="formRules" ref="form" style="width: 500px;">
-        <el-form-item label="标题" prop="title">
-          <el-input v-model="editForm.title" auto-complete="off" ></el-input>
+      <el-form :model="editForm" label-width="100px" :rules="formRules" ref="form" style="width: 500px;">
+        <el-form-item label="状态" prop="status">
+          <el-select v-model="editForm.status" placeholder="请选择">
+            <el-option
+              v-for="item in status_list"
+              :key="item.value"
+              :label="item.label"
+              :value="item.value">
+            </el-option>
+          </el-select>
         </el-form-item>
-        <el-form-item label="图片" prop="image">
+        <el-form-item label="新密码">
+          <el-input v-model="editForm.password" placeholder="请输入新密码"></el-input>
+        </el-form-item>
+        <el-form-item label="确认新密码">
+          <el-input v-model="editForm.cfpassword" placeholder="请输入确认新密码"></el-input>
+        </el-form-item>
+      </el-form>
+      <div slot="footer" class="dialog-footer">
+        <el-button @click.native="resetForm()">取消</el-button>
+        <el-button type="primary" @click="updateData" :loading="editIsLoading">修改</el-button>
+      </div>
+    </el-dialog>
+
+    <!--生成系统会员-->
+    <el-dialog title="生成系统会员" :visible.sync="dialogFormSystemVisible" :close-on-click-modal="false" :show-close="false" width="700px">
+      <el-form :model="systemForm" label-width="100px" ref="formsystem" style="width: 500px;">
+        <el-form-item label="微信收款码" prop="image">
           <el-upload
             class="avatar-uploader"
             :action="upload_url"
@@ -64,15 +86,21 @@
             accept=".jpg, .png, .jpeg"
             :show-file-list="false"
             :on-success="uploadSuccess">
-            <img v-if="editForm.image" :src="editForm.image" class="avatar">
-            <i v-else class="el-icon-plus avatar-uploader-icon"></i>
+            <img v-if="systemForm.image" :src="systemForm.image" class="avatar" style="width: 100px; height: 100px;">
+            <i v-else class="el-icon-plus avatar-uploader-icon" style="width: 100px; height: 100px; line-height: 100px;"></i>
           </el-upload>
+        </el-form-item>
+        <el-form-item label="会员账号">
+          <span style="color: red;">账号从上级到下级依次添加</span>
+        </el-form-item>
+        <el-form-item style="width: 900px; margin-bottom: 0px;" v-for="(item, index) in systemForm.memberList" :key="index">
+          <el-input size="mini" v-model="item.mobile" auto-complete="off" style="display: inline-block; width: 200px; margin-right: 10px;" placeholder="手机号"></el-input>
+          <el-input size="mini" v-model="item.name" auto-complete="off" style="display: inline-block; width: 200px; margin-right: 10px;" placeholder="姓名"></el-input>
         </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
-        <el-button @click.native="resetForm()">取消</el-button>
-        <el-button v-if="dialogStatus == 'create'" type="primary" @click="createData" :loading="addIsLoading">添加</el-button>
-        <el-button v-else type="primary" @click="updateData" :loading="editIsLoading">修改</el-button>
+        <el-button @click.native="resetSystemForm()">取消</el-button>
+        <el-button type="primary" @click="createSystemMember" :loading="systemLoading">提交</el-button>
       </div>
     </el-dialog>
 	</section>
@@ -81,9 +109,8 @@
 <script>
 import {
   list,
-  add,
   edit,
-  del
+  createSystemMember
 } from '@/api/member'
 import { getToken } from '@/utils/auth'
 import {
@@ -102,21 +129,24 @@ export default {
         mobile: '',
         name: ''
       },
-      addIsLoading: false,
       editIsLoading: false,
       dialogFormVisible: false,
       dialogStatus: '',
       dialogTitle: '',
       editForm: {},
       formRules: {
-        name: [{ required: true, message: '请输入姓名', trigger: 'blur' }],
-        image: [{ required: true, message: '请上传图片', trigger: 'blur' }]
+        status: [{ required: true, message: '请选择状态', trigger: 'blur' }]
       },
+      dialogFormSystemVisible: false,
+      systemForm: {},
+      systemLoading: false,
       loading: false,
       data: [],
       page: 1,
       pageSize: 20,
-      total: 0
+      total: 0,
+      system_num: -1,
+      status_list: []
     }
   },
   methods: {
@@ -132,24 +162,6 @@ export default {
     handleSearch() {
       this.page = 1
       this.getList()
-    },
-    createData() {
-      this.$refs.form.validate(valid => {
-        if (valid) {
-          const params = Object.assign({}, this.editForm)
-          add(params).then(res => {
-            this.addIsLoading = false
-            if (res.code === 0) {
-              this.$message({
-                message: '操作成功',
-                type: 'success'
-              })
-              this.dialogFormVisible = false
-              this.getList()
-            }
-          }).catch(() => { this.addIsLoading = false })
-        }
-      })
     },
     updateData() {
       this.$refs.form.validate(valid => {
@@ -169,41 +181,16 @@ export default {
         }
       })
     },
-    handleAdd() {
-      this.dialogStatus = 'create'
-      this.dialogTitle = '添加'
-      this.editForm = {
-        title: '',
-        image: ''
-      }
-      this.dialogFormVisible = true
-    },
     handleEdit(row) {
       this.dialogStatus = 'update'
       this.dialogTitle = '修改'
       this.editForm = {
         id: row.id,
-        title: row.title,
-        image: row.image
+        status: row.status,
+        password: '',
+        cfpassword: ''
       }
       this.dialogFormVisible = true
-    },
-    handleDel(row) {
-      this.$confirm('确认删除吗？', '提示', {
-        confirmButtonText: '确定',
-        cancelButtonText: '取消',
-        type: 'warning'
-      }).then(() => {
-        del({ id: row.id }).then(res => {
-          if (res.code === 0) {
-            this.$message({
-              message: '操作成功',
-              type: 'success'
-            })
-            this.getList()
-          }
-        }).catch(() => {})
-      }).catch(() => {})
     },
     resetForm() {
       this.dialogFormVisible = false
@@ -211,14 +198,44 @@ export default {
     },
     uploadSuccess(res, file, fileList) {
       if (res.code === 0) {
-        this.editForm.image = res.file
-        console.log(this.editForm.image)
+        this.systemForm.image = res.file
       } else {
         this.$message({
           message: res.message,
           type: 'error'
         })
       }
+    },
+    handleCreateSystem() {
+      this.dialogFormSystemVisible = true
+      this.systemForm = {
+        image: '',
+        memberList: []
+      }
+      for (let index = 0; index < 10; index++) {
+        this.systemForm.memberList.push({
+          mobile: '',
+          name: ''
+        })
+      }
+    },
+    createSystemMember() {
+      const params = Object.assign({}, this.systemForm)
+      createSystemMember(params).then(res => {
+        this.systemLoading = false
+        if (res.code === 0) {
+          this.$message({
+            message: '操作成功',
+            type: 'success'
+          })
+          this.dialogFormSystemVisible = false
+          this.getList()
+        }
+      }).catch(() => { this.systemLoading = false })
+    },
+    resetSystemForm() {
+      this.dialogFormSystemVisible = false
+      this.$refs['formsystem'].resetFields()
     },
     getList() {
       const params = Object.assign({}, this.filters)
@@ -230,6 +247,8 @@ export default {
         if (res.code === 0) {
           this.total = res.total
           this.data = res.data
+          this.system_num = res.system_num
+          this.status_list = res.status_list
         }
       }).catch(() => { this.loading = false })
     }

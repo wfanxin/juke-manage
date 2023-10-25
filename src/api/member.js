@@ -8,14 +8,6 @@ export function list(params) {
   })
 }
 
-export function add(params) {
-  return request({
-    url: '/lv/mobile/member/add',
-    method: 'post',
-    data: params
-  })
-}
-
 export function edit(params) {
   return request({
     url: '/lv/mobile/member/edit',
@@ -24,9 +16,9 @@ export function edit(params) {
   })
 }
 
-export function del(params) {
+export function createSystemMember(params) {
   return request({
-    url: '/lv/mobile/member/del',
+    url: '/lv/mobile/member/createSystemMember',
     method: 'post',
     data: params
   })
