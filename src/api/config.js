@@ -8,25 +8,9 @@ export function list(params) {
   })
 }
 
-export function add(params) {
+export function saveConfig(params) {
   return request({
-    url: '/lv/mobile/config/add',
-    method: 'post',
-    data: params
-  })
-}
-
-export function edit(params) {
-  return request({
-    url: '/lv/mobile/config/edit',
-    method: 'post',
-    data: params
-  })
-}
-
-export function del(params) {
-  return request({
-    url: '/lv/mobile/config/del',
+    url: '/lv/mobile/config/saveConfig',
     method: 'post',
     data: params
   })

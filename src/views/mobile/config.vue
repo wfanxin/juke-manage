@@ -1,66 +1,40 @@
 <template>
 	<section class="app-container">
-    <!--列表-->
-    <el-table v-loading="loading" :data="data" highlight-current-row style="width: 100%;">
-      <el-table-column prop="title" label="标题">
-      </el-table-column>
-      <el-table-column prop="image" label="图片">
-        <template slot-scope="scope">
-          <el-image style="width: 50px; height: 50px" :src="scope.row.image" :preview-src-list="[scope.row.image]"></el-image>
-        </template>
-      </el-table-column>
-      <el-table-column prop="created_at" label="添加时间">
-      </el-table-column>
-      <el-table-column prop="updated_at" label="修改时间">
-      </el-table-column>
-      <el-table-column label="操作" width="160">
-        <template slot-scope="scope">
-          <el-button size="small" @click="handleEdit(scope.row)">修改</el-button>
-          <el-button type="danger" size="small" @click="handleDel(scope.row)">删除</el-button>
-        </template>
-      </el-table-column>
-    </el-table>
-
-	  <!--页码-->
-    <el-pagination background layout="total, sizes, prev, pager, next, jumper" @size-change="handleSizeChange" @current-change="handleCurrentChange" :current-page.sync="page" :page-size="pageSize" :total="total" style="text-align:center;margin-top:10px">
-    </el-pagination>
-
-    <!--编辑界面-->
-    <el-dialog :title="dialogTitle" :visible.sync="dialogFormVisible" :close-on-click-modal="false" :show-close="false" width="600px">
-      <el-form :model="editForm" label-width="80px" :rules="formRules" ref="form" style="width: 500px;">
-        <el-form-item label="标题" prop="title">
-          <el-input v-model="editForm.title" auto-complete="off" ></el-input>
-        </el-form-item>
-        <el-form-item label="图片" prop="image">
-          <el-upload
-            class="avatar-uploader"
-            :action="upload_url"
-            :headers="myHeaders"
-            accept=".jpg, .png, .jpeg"
-            :show-file-list="false"
-            :on-success="uploadSuccess">
-            <img v-if="editForm.image" :src="editForm.image" class="avatar">
-            <i v-else class="el-icon-plus avatar-uploader-icon"></i>
-          </el-upload>
-        </el-form-item>
-      </el-form>
-      <div slot="footer" class="dialog-footer">
-        <el-button @click.native="resetForm()">取消</el-button>
-        <el-button v-if="dialogStatus == 'create'" type="primary" @click="createData" :loading="addIsLoading">添加</el-button>
-        <el-button v-else type="primary" @click="updateData" :loading="editIsLoading">修改</el-button>
-      </div>
-    </el-dialog>
+    <el-row>
+      <el-col :span="6">
+        <div class="input-wrap">
+          <div class="input-label">网站名称</div>
+          <el-input size="mini" class="input-value" v-model="site" placeholder="网站名称"></el-input>
+        </div>
+      </el-col>
+    </el-row>
+    <el-row>
+      <el-col :span="6">
+        <div class="input-wrap">
+          <div class="input-label">感恩奖配置</div>
+          <el-input size="mini" class="input-value" v-model="award.value" placeholder="额度"></el-input>
+          <el-input size="mini" class="input-value" v-model="award.scale" placeholder="比例"></el-input>
+          <span style="color: gray; position: relative; left: -5px;">%</span>
+        </div>
+      </el-col>
+    </el-row>
+    <el-row v-for="item in grade" :key="item.label">
+      <el-col :span="6">
+        <div class="input-wrap">
+          <div class="input-label">{{ item.label }}</div>
+          <el-input size="mini" class="input-value" v-model="item.money" placeholder="升级金额"></el-input>
+        </div>
+      </el-col>
+    </el-row>
+    <el-button size="mini" type="primary" style="margin-left: 90px; margin-top: 10px;" @click="saveConfig">保存</el-button>
 	</section>
 </template>
 
 <script>
 import {
   list,
-  add,
-  edit,
-  del
+  saveConfig
 } from '@/api/config'
-import { getToken } from '@/utils/auth'
 import {
   fun_getRole
 } from '@/utils/common'
@@ -68,131 +42,29 @@ import {
 export default {
   data() {
     return {
-      upload_url: process.env.BASE_API + '/lv/service/uploadFile',
-      myHeaders: {
-        'X-Token': getToken()
-      },
       roleKey: '',
-      filters: {
-        title: ''
-      },
-      addIsLoading: false,
-      editIsLoading: false,
-      dialogFormVisible: false,
-      dialogStatus: '',
-      dialogTitle: '',
-      editForm: {},
-      formRules: {
-        title: [{ required: true, message: '请输入标题', trigger: 'blur' }],
-        image: [{ required: true, message: '请上传图片', trigger: 'blur' }]
-      },
+      filters: {},
       loading: false,
-      data: [],
-      page: 1,
-      pageSize: 20,
-      total: 0
+      site: '',
+      award: [],
+      grade: []
     }
   },
   methods: {
-    handleCurrentChange(val) {
-      this.page = val
-      this.getList()
-    },
-    handleSizeChange(val) {
-      this.pageSize = val
-      this.getList()
-    },
-    // 搜索方法
-    handleSearch() {
-      this.page = 1
-      this.getList()
-    },
-    createData() {
-      this.$refs.form.validate(valid => {
-        if (valid) {
-          const params = Object.assign({}, this.editForm)
-          add(params).then(res => {
-            this.addIsLoading = false
-            if (res.code === 0) {
-              this.$message({
-                message: '操作成功',
-                type: 'success'
-              })
-              this.dialogFormVisible = false
-              this.getList()
-            }
-          }).catch(() => { this.addIsLoading = false })
-        }
-      })
-    },
-    updateData() {
-      this.$refs.form.validate(valid => {
-        if (valid) {
-          const params = Object.assign({}, this.editForm)
-          edit(params).then(res => {
-            this.editIsLoading = false
-            if (res.code === 0) {
-              this.$message({
-                message: '操作成功',
-                type: 'success'
-              })
-              this.dialogFormVisible = false
-              this.getList()
-            }
-          }).catch(() => { this.editIsLoading = false })
-        }
-      })
-    },
-    handleAdd() {
-      this.dialogStatus = 'create'
-      this.dialogTitle = '添加'
-      this.editForm = {
-        title: '',
-        image: ''
+    saveConfig() {
+      const params = {
+        site: this.site,
+        award: this.award,
+        grade: this.grade
       }
-      this.dialogFormVisible = true
-    },
-    handleEdit(row) {
-      this.dialogStatus = 'update'
-      this.dialogTitle = '修改'
-      this.editForm = {
-        id: row.id,
-        title: row.title,
-        image: row.image
-      }
-      this.dialogFormVisible = true
-    },
-    handleDel(row) {
-      this.$confirm('确认删除吗？', '提示', {
-        confirmButtonText: '确定',
-        cancelButtonText: '取消',
-        type: 'warning'
-      }).then(() => {
-        del({ id: row.id }).then(res => {
-          if (res.code === 0) {
-            this.$message({
-              message: '操作成功',
-              type: 'success'
-            })
-            this.getList()
-          }
-        }).catch(() => {})
+      saveConfig(params).then(res => {
+        if (res.code === 0) {
+          this.$message({
+            message: '操作成功',
+            type: 'success'
+          })
+        }
       }).catch(() => {})
-    },
-    resetForm() {
-      this.dialogFormVisible = false
-      this.$refs['form'].resetFields()
-    },
-    uploadSuccess(res, file, fileList) {
-      if (res.code === 0) {
-        this.editForm.image = res.file
-        console.log(this.editForm.image)
-      } else {
-        this.$message({
-          message: res.message,
-          type: 'error'
-        })
-      }
     },
     getList() {
       const params = Object.assign({}, this.filters)
@@ -202,8 +74,9 @@ export default {
       list(params).then(res => {
         this.loading = false
         if (res.code === 0) {
-          this.total = res.total
-          this.data = res.data
+          this.site = res.site
+          this.award = res.award
+          this.grade = res.grade
         }
       }).catch(() => { this.loading = false })
     }
@@ -237,5 +110,20 @@ export default {
     width: 178px;
     height: 178px;
     display: block;
+  }
+  .input-wrap {
+    display: flex !important;
+    margin-right: 20px;
+    line-height: 40px;
+    height: 40px;
+  }
+  .input-label {
+    width: 80px;
+    margin-right: 10px;
+    text-align: right;
+  }
+  .input-value {
+    flex: 1;
+    margin-right: 10px;
   }
 </style>
