@@ -25,6 +25,19 @@
           <el-input size="mini" class="input-value" v-model="item.money" placeholder="升级金额"></el-input>
         </div>
       </el-col>
+      <el-col :span="6">
+        <div class="input-wrap">
+          <el-upload
+            class="avatar-uploader"
+            :action="upload_url"
+            :headers="myHeaders"
+            accept="videoAccept"
+            :show-file-list="false"
+            :on-success="(res, file, fileList) => uploadSuccess(res, file, fileList, item)">
+            <el-input size="mini" class="input-value" v-model="item.video" placeholder="点击上传国学视频"></el-input>
+          </el-upload>
+        </div>
+      </el-col>
     </el-row>
     <el-button size="mini" type="primary" style="margin-left: 90px; margin-top: 10px;" @click="saveConfig">保存</el-button>
 	</section>
@@ -38,10 +51,14 @@ import {
 import {
   fun_getRole
 } from '@/utils/common'
-
+import { getToken } from '@/utils/auth'
 export default {
   data() {
     return {
+      upload_url: process.env.BASE_API + '/lv/service/uploadFile',
+      myHeaders: {
+        'X-Token': getToken()
+      },
       roleKey: '',
       filters: {},
       loading: false,
@@ -65,6 +82,16 @@ export default {
           })
         }
       }).catch(() => {})
+    },
+    uploadSuccess(res, file, fileList, item) {
+      if (res.code === 0) {
+        item.video = res.file
+      } else {
+        this.$message({
+          message: res.message,
+          type: 'error'
+        })
+      }
     },
     getList() {
       const params = Object.assign({}, this.filters)
