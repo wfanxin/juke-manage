@@ -105,6 +105,15 @@ export const asyncRouterMap = [
         title: '会员管理',
         icon: 'documentation'
       }
+    }, {
+      path: 'payRecord',
+      component: () => import('@/views/mobile/payRecord'),
+      name: '打款记录',
+      key: '@Get:lv_mobile_payRecord_list',
+      meta: {
+        title: '打款记录',
+        icon: 'documentation'
+      }
     }]
   }, {
     path: '/system',
