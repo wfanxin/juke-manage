@@ -114,6 +114,15 @@ export const asyncRouterMap = [
         title: '打款记录',
         icon: 'documentation'
       }
+    }, {
+      path: 'leave',
+      component: () => import('@/views/mobile/leave'),
+      name: '留言管理',
+      key: '@Get:lv_mobile_leave_list',
+      meta: {
+        title: '留言管理',
+        icon: 'documentation'
+      }
     }]
   }, {
     path: '/system',
