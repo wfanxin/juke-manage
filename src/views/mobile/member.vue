@@ -212,7 +212,7 @@ export default {
         image: '',
         memberList: []
       }
-      for (let index = 0; index < 10; index++) {
+      for (let index = 0; index < 20; index++) {
         this.systemForm.memberList.push({
           mobile: '',
           name: ''
