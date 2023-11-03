@@ -31,3 +31,11 @@ export function del(params) {
     data: params
   })
 }
+
+export function detail(params) {
+  return request({
+    url: '/lv/mobile/article/detail',
+    method: 'get',
+    params: params
+  })
+}

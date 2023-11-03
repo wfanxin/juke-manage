@@ -78,7 +78,8 @@ import {
   list,
   add,
   edit,
-  del
+  del,
+  detail
 } from '@/api/article'
 import {
   fun_getRole
@@ -190,9 +191,10 @@ export default {
         id: row.id,
         title: row.title,
         image: row.image,
-        content: row.content
+        content: '加载中...'
       }
       this.dialogFormVisible = true
+      this.getDetail(row.id)
     },
     handleDel(row) {
       this.$confirm('确认删除吗？', '提示', {
@@ -218,13 +220,18 @@ export default {
     uploadSuccess(res, file, fileList) {
       if (res.code === 0) {
         this.editForm.image = res.file
-        console.log(this.editForm.image)
       } else {
         this.$message({
           message: res.message,
           type: 'error'
         })
       }
+    },
+    getDetail(id) {
+      const params = { id: id }
+      detail(params).then(res => {
+        this.editForm.content = res.data.content
+      }).catch(() => {})
     },
     getList() {
       const params = Object.assign({}, this.filters)
