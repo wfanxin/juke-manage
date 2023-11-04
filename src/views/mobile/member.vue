@@ -41,6 +41,7 @@
       <el-table-column label="操作" width="160">
         <template slot-scope="scope">
           <el-button size="small" @click="handleEdit(scope.row)">修改</el-button>
+          <el-button type="danger" size="small" @click="handleDel(scope.row)">删除</el-button>
         </template>
       </el-table-column>
     </el-table>
@@ -110,6 +111,7 @@
 import {
   list,
   edit,
+  del,
   createSystemMember
 } from '@/api/member'
 import { getToken } from '@/utils/auth'
@@ -191,6 +193,23 @@ export default {
         cfpassword: ''
       }
       this.dialogFormVisible = true
+    },
+    handleDel(row) {
+      this.$confirm('确认删除吗？', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(() => {
+        del({ id: row.id }).then(res => {
+          if (res.code === 0) {
+            this.$message({
+              message: '操作成功',
+              type: 'success'
+            })
+            this.getList()
+          }
+        }).catch(() => {})
+      }).catch(() => {})
     },
     resetForm() {
       this.dialogFormVisible = false

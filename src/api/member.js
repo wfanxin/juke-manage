@@ -16,6 +16,14 @@ export function edit(params) {
   })
 }
 
+export function del(params) {
+  return request({
+    url: '/lv/mobile/member/del',
+    method: 'post',
+    data: params
+  })
+}
+
 export function createSystemMember(params) {
   return request({
     url: '/lv/mobile/member/createSystemMember',

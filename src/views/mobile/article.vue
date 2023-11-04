@@ -61,7 +61,19 @@
           </el-upload>
         </el-form-item>
         <el-form-item label="内容" prop="content">
-          <quill-editor ref="myQuillEditor" v-model="editForm.content"/>
+          <quill-editor ref="myQuillEditor" v-model="editForm.content">
+            <div id="toolbar" slot="toolbar">
+              <el-upload
+                class="avatar-uploader-edit"
+                :action="upload_url"
+                :headers="myHeaders"
+                accept=".jpg, .png, .jpeg"
+                :show-file-list="false"
+                :on-success="uploadSuccessEdit">
+                <el-button size="small" type="primary">上传图片</el-button>
+              </el-upload>
+            </div>
+          </quill-editor>
         </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
@@ -191,7 +203,7 @@ export default {
         id: row.id,
         title: row.title,
         image: row.image,
-        content: '加载中...'
+        content: row.content
       }
       this.dialogFormVisible = true
       this.getDetail(row.id)
@@ -220,6 +232,16 @@ export default {
     uploadSuccess(res, file, fileList) {
       if (res.code === 0) {
         this.editForm.image = res.file
+      } else {
+        this.$message({
+          message: res.message,
+          type: 'error'
+        })
+      }
+    },
+    uploadSuccessEdit(res, file, fileList) {
+      if (res.code === 0) {
+        this.editForm.content += '<img src="' + res.file + '" />'
       } else {
         this.$message({
           message: res.message,
