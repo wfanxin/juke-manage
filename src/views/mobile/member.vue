@@ -53,6 +53,12 @@
     <!--编辑界面-->
     <el-dialog :title="dialogTitle" :visible.sync="dialogFormVisible" :close-on-click-modal="false" :show-close="false" width="600px">
       <el-form :model="editForm" label-width="100px" :rules="formRules" ref="form" style="width: 500px;">
+        <el-form-item label="手机号" prop="mobile">
+          <el-input v-model="editForm.mobile" placeholder="请输入手机号"></el-input>
+        </el-form-item>
+        <el-form-item label="姓名" prop="name">
+          <el-input v-model="editForm.name" placeholder="请输入姓名"></el-input>
+        </el-form-item>
         <el-form-item label="状态" prop="status">
           <el-select v-model="editForm.status" placeholder="请选择">
             <el-option
@@ -137,6 +143,8 @@ export default {
       dialogTitle: '',
       editForm: {},
       formRules: {
+        mobile: [{ required: true, message: '手机号不能为空', trigger: 'blur' }],
+        name: [{ required: true, message: '姓名不能为空', trigger: 'blur' }],
         status: [{ required: true, message: '请选择状态', trigger: 'blur' }]
       },
       dialogFormSystemVisible: false,
@@ -188,6 +196,8 @@ export default {
       this.dialogTitle = '修改'
       this.editForm = {
         id: row.id,
+        mobile: row.mobile,
+        name: row.name,
         status: row.status,
         password: '',
         cfpassword: ''
