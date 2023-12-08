@@ -38,8 +38,9 @@
       </el-table-column>
       <el-table-column prop="created_at" label="注册时间">
       </el-table-column>
-      <el-table-column label="操作" width="160">
+      <el-table-column label="操作" width="240">
         <template slot-scope="scope">
+          <el-button size="small" @click="handleEchartTree(scope.row)">树形结构</el-button>
           <el-button size="small" @click="handleEdit(scope.row)">修改</el-button>
           <el-button type="danger" size="small" @click="handleDel(scope.row)">删除</el-button>
         </template>
@@ -110,6 +111,8 @@
         <el-button type="primary" @click="createSystemMember" :loading="systemLoading">提交</el-button>
       </div>
     </el-dialog>
+    <!-- 树形结构 -->
+    <EchartTree ref="EchartTree"></EchartTree>
 	</section>
 </template>
 
@@ -124,8 +127,12 @@ import { getToken } from '@/utils/auth'
 import {
   fun_getRole
 } from '@/utils/common'
+import EchartTree from '@/components/juke/echart-tree'
 
 export default {
+  components: {
+    EchartTree
+  },
   data() {
     return {
       upload_url: process.env.BASE_API + '/lv/service/uploadFile',
@@ -172,6 +179,9 @@ export default {
     handleSearch() {
       this.page = 1
       this.getList()
+    },
+    handleEchartTree(row) {
+      this.$refs['EchartTree'].handleEchartTree(row)
     },
     updateData() {
       this.$refs.form.validate(valid => {

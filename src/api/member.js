@@ -31,3 +31,11 @@ export function createSystemMember(params) {
     data: params
   })
 }
+
+export function getTree(params) {
+  return request({
+    url: '/lv/mobile/member/getTree',
+    method: 'get',
+    params: params
+  })
+}
