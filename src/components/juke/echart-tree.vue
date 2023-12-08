@@ -1,7 +1,7 @@
 <template>
   <section>
-    <el-dialog title="树形结构" :visible.sync="dialogVisible" width="60%">
-      <div style="height: calc(100vh - 270px); overflow-y: auto;" v-if="dialogVisible">
+    <el-dialog title="树形结构" :visible.sync="dialogVisible" :close-on-click-modal="false" top="5vh" width="90%">
+      <div style="height: calc(100vh - 160px); overflow-y: auto;" v-if="dialogVisible">
         <div id="chart"></div>
       </div>
     </el-dialog>
@@ -36,7 +36,7 @@ export default {
             // 展开的节点 -1，null 或者 undefined 表示所有节点都展开
             initialTreeDepth: -1,
             // 开启折叠节点
-            expandAndCollapse: false,
+            expandAndCollapse: true,
             label: {
               show: true,
               offset: [0, 0],
